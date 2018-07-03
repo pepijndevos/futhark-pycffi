@@ -1,5 +1,8 @@
-from functools import partial
+from functools import partial, wraps
+from types import SimpleNamespace
 import numpy as np
+
+import pdb
 
 np_types = {
     'int8_t': 'int8',
@@ -16,54 +19,65 @@ np_types = {
 
 c_types = {v: k for k, v in np_types.items()}
 
+Type = SimpleNamespace
+
 class Futhark(object):
     def __init__(self, mod):
         self.lib = mod.lib
         self.ffi = mod.ffi
         self.conf = mod.ffi.gc(mod.lib.futhark_context_config_new(), mod.lib.futhark_context_config_free)
         self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), mod.lib.futhark_context_free)
+
+        self.make_types()
+        self.make_entrypoints()
         
+    def make_types(self):
         self.types = {}
-        for fn in dir(mod.lib):
-            ff = getattr(mod.lib, fn)
-            ff_t = mod.ffi.typeof(ff)
+        for fn in dir(self.lib):
+            ff = getattr(self.lib, fn)
+            ff_t = self.ffi.typeof(ff)
             if fn.startswith('futhark_new'):
                 ret_t = ff_t.result
                 arg_t = ff_t.args[1]
-                dim = len(ff_t.args[2:])
-                self.types.setdefault(ret_t, {})['new'] = ff
-                self.types.setdefault(ret_t, {})['itemtype'] = arg_t
-                self.types.setdefault(ret_t, {})['dimension'] = dim
+                rank = len(ff_t.args[2:])
+                self.types.setdefault(ret_t, Type()).new = ff
+                self.types[ret_t].itemtype = arg_t
+                self.types[ret_t].rank = rank
             elif fn.startswith('futhark_free'):
                 arg_t = ff_t.args[1]
-                self.types.setdefault(arg_t, {})['free'] = ff
+                self.types.setdefault(arg_t, Type()).free = ff
             elif fn.startswith('futhark_values'):
                 arg_t = ff_t.args[1]
-                self.types.setdefault(arg_t, {})['values'] = ff
+                self.types.setdefault(arg_t, Type()).values = ff
             elif fn.startswith('futhark_shape'):
                 arg_t = ff_t.args[1]
-                self.types.setdefault(arg_t, {})['shape'] = ff
+                self.types.setdefault(arg_t, Type()).shape = ff
 
-    def to_futhark(self, cname, data):
+    def make_entrypoints(self):
+        for fn in dir(self.lib):
+            if fn.startswith('futhark_entry'):
+                ff = getattr(self.lib, fn)
+                setattr(self, fn[14:], self.make_wrapper(ff))
+
+    def to_futhark(self, fut_type, data):
         if isinstance(data, self.ffi.CData):
             return data # opaque type
         else:
-            fut_type = self.types[cname]
-            datat = data.astype(np_types[fut_type['itemtype'].item.cname], copy=False)
-            ptr = self.ffi.cast(fut_type['itemtype'], self.ffi.from_buffer(datat))
-            constr = fut_type['new']
-            destr = fut_type['free']
+            datat = data.astype(np_types[fut_type.itemtype.item.cname], copy=False)
+            ptr = self.ffi.cast(fut_type.itemtype, self.ffi.from_buffer(datat))
+            constr = fut_type.new
+            destr = fut_type.free
             return self.ffi.gc(constr(self.ctx, ptr, *data.shape), partial(destr, self.ctx))
 
     def _from_futhark(self, data):
         cname = self.ffi.typeof(data)
         fut_type = self.types[cname]
-        cshape = fut_type['shape'](self.ctx, data)
-        shape = [cshape[i] for i in range(fut_type['dimension'])]
-        dtype = np_types[fut_type['itemtype'].item.cname]
+        cshape = fut_type.shape(self.ctx, data)
+        shape = [cshape[i] for i in range(fut_type.rank)]
+        dtype = np_types[fut_type.itemtype.item.cname]
         result = np.zeros(shape, dtype=dtype)
-        cresult = self.ffi.cast(fut_type['itemtype'], result.ctypes.data)
-        fut_type['values'](self.ctx, data, cresult)
+        cresult = self.ffi.cast(fut_type.itemtype, result.ctypes.data)
+        fut_type.values(self.ctx, data, cresult)
         return result
 
     def from_futhark(self, *dargs):
@@ -76,39 +90,37 @@ class Futhark(object):
         else:
             return tuple(out)
 
-    def call(self, name, *args):
-        name = 'futhark_' + name
-        ff = getattr(self.lib, name)
+    def make_wrapper(self, ff):
         ff_t = self.ffi.typeof(ff)
-        fut_args = []
-        out_args = []
-        arg_idx = 0
+        converters = []
+        out_types = []
         for arg_t in ff_t.args[1:]:
             if arg_t.kind == 'pointer' and (arg_t.item.kind == 'primitive' or arg_t.item.kind == 'pointer'):
                 # output arguments
-                out_t = arg_t.cname
-                out_args.append(self.ffi.new(out_t))
+                out_types.append(arg_t)
             else:
                 # input arguments
                 if arg_t in self.types:
-                    fut_args.append(self.to_futhark(arg_t, args[arg_idx]))
+                    fut_type = self.types[arg_t]
+                    converters.append(partial(self.to_futhark, fut_type))
                 else:
-                    fut_args.append(args[arg_idx])
-                arg_idx += 1
-        ff(self.ctx, *out_args, *fut_args)
-        results = []
-        for out in out_args:
-            out_t = self.ffi.typeof(out).item
-            if out_t in self.types:
-                ptr = self.ffi.gc(out[0], partial(self.types[out_t]['free'], self.ctx))
-                results.append(ptr)
+                    converters.append(lambda x: x)
+
+        @wraps(ff)
+        def wrapper(*args):
+            out_args = [self.ffi.new(t) for t in out_types]
+            ff(self.ctx, *out_args,
+               *(f(a) for f, a in zip(converters, args)))
+            results = []
+            for out_t, out in zip(out_types, out_args):
+                if out_t in self.types:
+                    ptr = self.ffi.gc(out[0], partial(self.types[out_t.item].free, self.ctx))
+                    results.append(ptr)
+                else:
+                    results.append(out[0])
+            if len(results) == 1:
+                return results[0]
             else:
-                results.append(out[0])
-        if len(results) == 1:
-            return results[0]
-        else:
-            return tuple(results)
+                return tuple(results)
 
-
-    def __getattr__(self, attr):
-        return partial(self.call, attr)
+        return wrapper
