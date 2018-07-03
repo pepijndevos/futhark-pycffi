@@ -24,5 +24,6 @@ import _test
 from futhark_ffi import Futhark
 
 test = Futhark(_test)
-test.test3(np.arange(10))
+res = test.test3(np.arange(10))
+test.from_futhark(res)
 ```

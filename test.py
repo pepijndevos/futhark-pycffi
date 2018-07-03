@@ -18,20 +18,25 @@ class TestFFI(unittest.TestCase):
 
     def test_list_output(self):
         data = np.arange(10)
-        assert_array_equal(self.fut.test3(data), np.cumsum(data))
+        res = self.fut.test3(data)
+        pyres = self.fut.from_futhark(res)
+        assert_array_equal(pyres, np.cumsum(data))
 
     def test_multi_output(self):
         self.assertEqual(self.fut.test4(4,5), (4+5, 4-5))
 
     def test_2d(self):
         data = np.arange(9).reshape(3,3)
-        assert_array_equal(self.fut.test5(data), data*2)
+        res = self.fut.test5(data)
+        pyres = self.fut.from_futhark(res)
+        assert_array_equal(pyres, data*2)
         with self.assertRaises(ValueError):
             self.fut.test5(data.T)
 
     def test_opaque(self):
         res = self.fut.test6(10)
         (pos, neg) = self.fut.test7(res)
+        (pos, neg) = self.fut.from_futhark(pos, neg)
         assert_array_equal(pos, np.arange(10))
         assert_array_equal(neg, -np.arange(10))
         
