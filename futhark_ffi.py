@@ -46,22 +46,29 @@ class Futhark(object):
 
     def to_futhark(self, cname, data):
         fut_type = self.types[cname]
-        datat = data.astype(np_types[fut_type['itemtype'].item.cname], copy=False)
-        ptr = self.ffi.cast(fut_type['itemtype'], self.ffi.from_buffer(datat))
-        constr = fut_type['new']
-        destr = fut_type['free']
-        return self.ffi.gc(constr(self.ctx, ptr, *data.shape), partial(destr, self.ctx))
+        if isinstance(data, self.ffi.CData):
+            return data # opaque type
+        else:
+            datat = data.astype(np_types[fut_type['itemtype'].item.cname], copy=False)
+            ptr = self.ffi.cast(fut_type['itemtype'], self.ffi.from_buffer(datat))
+            constr = fut_type['new']
+            destr = fut_type['free']
+            return self.ffi.gc(constr(self.ctx, ptr, *data.shape), partial(destr, self.ctx))
 
     def from_futhark(self, cname, data):
         fut_type = self.types[cname]
-        cshape = fut_type['shape'](self.ctx, data)
-        shape = [cshape[i] for i in range(fut_type['dimension'])]
-        dtype = np_types[fut_type['itemtype'].item.cname]
-        result = np.zeros(shape, dtype=dtype)
-        cresult = self.ffi.cast(fut_type['itemtype'], result.ctypes.data)
-        fut_type['values'](self.ctx, data, cresult)
-        fut_type['free'](self.ctx, data)
-        return result
+        if 'new' in fut_type:
+            cshape = fut_type['shape'](self.ctx, data)
+            shape = [cshape[i] for i in range(fut_type['dimension'])]
+            dtype = np_types[fut_type['itemtype'].item.cname]
+            result = np.zeros(shape, dtype=dtype)
+            cresult = self.ffi.cast(fut_type['itemtype'], result.ctypes.data)
+            fut_type['values'](self.ctx, data, cresult)
+            fut_type['free'](self.ctx, data)
+            return result
+        else: # opaque type
+            destr = fut_type['free']
+            return self.ffi.gc(data, partial(destr, self.ctx))
 
     def call(self, name, *args):
         name = 'futhark_' + name

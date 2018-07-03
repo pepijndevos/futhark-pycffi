@@ -12,3 +12,9 @@ entry test4 (a:f32) (b:f32) : (f32, f32) =
 
 entry test5 (a:[][]u64) : [][]u64 =
   map (map (*2)) a
+
+entry test6 (a:i8) : [](i8, i8) =
+  map (\x -> (x, -x)) <| i8.iota a
+
+entry test7 (a: [](i8, i8)) : ([]i8, []i8) =
+  unzip a

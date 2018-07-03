@@ -29,5 +29,12 @@ class TestFFI(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.fut.test5(data.T)
 
+    def test_opaque(self):
+        res = self.fut.test6(10)
+        (pos, neg) = self.fut.test7(res)
+        assert_array_equal(pos, np.arange(10))
+        assert_array_equal(neg, -np.arange(10))
+        
+
 if __name__ == '__main__':
     unittest.main()
