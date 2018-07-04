@@ -8,7 +8,8 @@ def build(name):
     ffibuilder = FFI()
 
     with open(name+'.c') as source:
-        ffibuilder.set_source('_'+name, source.read(), libraries=['OpenCL'])
+        ffibuilder.set_source('_'+name, source.read(), libraries=['OpenCL'],
+                              extra_compile_args=["-std=c99"])
 
     with open(name+'.h') as header:
         cdef = strip_includes(header)
