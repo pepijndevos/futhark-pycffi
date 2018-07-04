@@ -1,5 +1,4 @@
 from functools import partial, wraps
-from types import SimpleNamespace
 import numpy as np
 
 np_types = {
@@ -17,7 +16,8 @@ np_types = {
 
 c_types = {v: k for k, v in np_types.items()}
 
-Type = SimpleNamespace
+# SimpleNamespace does not exist in Python 2.7, unfortunately.
+class Type: pass
 
 class Futhark(object):
     """
@@ -68,7 +68,7 @@ class Futhark(object):
         if isinstance(data, self.ffi.CData):
             return data # opaque type
         else:
-            datat = data.astype(np_types[fut_type.itemtype.item.cname], copy=False)
+            datat = data.astype(np_types[fut_type.itemtype.item.cname], copy=False, order='C')
             ptr = self.ffi.cast(fut_type.itemtype, self.ffi.from_buffer(datat))
             constr = fut_type.new
             destr = fut_type.free
@@ -118,8 +118,8 @@ class Futhark(object):
         @wraps(ff)
         def wrapper(*args):
             out_args = [self.ffi.new(t) for t in out_types]
-            ff(self.ctx, *out_args,
-               *(f(a) for f, a in zip(converters, args)))
+            in_args = [f(a) for f, a in zip(converters, args)]
+            ff(self.ctx, *(out_args+in_args))
             results = []
             for out_t, out in zip(out_types, out_args):
                 if out_t.item in self.types:
