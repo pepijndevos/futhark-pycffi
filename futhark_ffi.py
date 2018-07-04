@@ -113,7 +113,7 @@ class Futhark(object):
                *(f(a) for f, a in zip(converters, args)))
             results = []
             for out_t, out in zip(out_types, out_args):
-                if out_t in self.types:
+                if out_t.item in self.types:
                     ptr = self.ffi.gc(out[0], partial(self.types[out_t.item].free, self.ctx))
                     results.append(ptr)
                 else:
