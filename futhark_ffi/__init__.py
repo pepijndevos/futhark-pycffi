@@ -2,8 +2,6 @@ from functools import partial, wraps
 from types import SimpleNamespace
 import numpy as np
 
-import pdb
-
 np_types = {
     'int8_t': 'int8',
     'int16_t': 'int16',
