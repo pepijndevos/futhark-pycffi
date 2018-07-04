@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='futhark_ffi',
-    version='0.6.1',
+    version='0.6.1b1',
     description='A Python library using the Futhark C backend via CFFI ',
     long_description=long_description,
     long_description_content_type='text/markdown',
