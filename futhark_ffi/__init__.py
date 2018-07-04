@@ -20,6 +20,12 @@ c_types = {v: k for k, v in np_types.items()}
 Type = SimpleNamespace
 
 class Futhark(object):
+    """
+    A CFFI wrapper for the Futhark C API.
+    Takes a CFFI-generated module.
+    Entrypoints return arrays as raw C types.
+    Use `from_futhark` to convert to Numpy arrays.
+    """
     def __init__(self, mod):
         self.lib = mod.lib
         self.ffi = mod.ffi
@@ -58,6 +64,7 @@ class Futhark(object):
                 setattr(self, fn[14:], self.make_wrapper(ff))
 
     def to_futhark(self, fut_type, data):
+        "Convert a Numpy array to a Futhark C type"
         if isinstance(data, self.ffi.CData):
             return data # opaque type
         else:
@@ -79,6 +86,10 @@ class Futhark(object):
         return result
 
     def from_futhark(self, *dargs):
+        """
+        Converts any number of Futhark C types to Numpy arrays.
+        Syncs once at the end.
+        """
         out = []
         for d in dargs:
             out.append(self._from_futhark(d))
