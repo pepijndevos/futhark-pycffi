@@ -14,8 +14,9 @@ def build(name):
         cdef = strip_includes(header)
         ffibuilder.cdef(cdef)
 
-    ffibuilder.compile()
+    return ffibuilder
 
 def main():
     name = sys.argv[1]
-    build(name)
+    ffi = build(name)
+    ffi.compile()
