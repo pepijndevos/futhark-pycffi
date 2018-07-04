@@ -7,13 +7,20 @@ A solution to reduce this overhead is to use CFFI to used the C backend from Pyt
 
 This library supports both `futhark-opencl` and `futhark-c`. Futhark arrays are mapped to and from Numpy arrays. Multiple outputs and multi-dimensional arrays are supported. Input arrays should be in contiguous C order.
 
+## Installation
+
+[Install Futhark](https://futhark.readthedocs.io/en/latest/installation.html), then simply
+```bash
+pip install futhark-ffi
+```
+
 ## Usage
 
 Generate a C library, and build a Python binding for it
 
 ```bash
 futhark-opencl --library test.fut
-python build_futhark_ffi.py test
+build_futhark_ffi test
 ```
 
 Use the Python wrapper
