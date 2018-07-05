@@ -28,11 +28,14 @@ class TestFFI(unittest.TestCase):
 
     def test_2d(self):
         data = np.arange(9).reshape(3,3)
+
         res = self.fut.test5(data)
         pyres = self.fut.from_futhark(res)
         assert_array_equal(pyres, data*2)
-        with self.assertRaises(ValueError):
-            self.fut.test5(data.T)
+
+        res = self.fut.test5(data.T)
+        pyres = self.fut.from_futhark(res)
+        assert_array_equal(pyres, (data*2).T)
 
     def test_opaque(self):
         res = self.fut.test6(10)
@@ -62,10 +65,12 @@ class TestCompat(unittest.TestCase):
 
     def test_2d(self):
         data = np.arange(9).reshape(3,3)
+
         res = self.fut.test5(data).get()
         assert_array_equal(res, data*2)
-        with self.assertRaises(ValueError):
-            self.fut.test5(data.T)
+
+        res = self.fut.test5(data.T).get()
+        assert_array_equal(res, (data*2).T)
 
     def test_opaque(self):
         res = self.fut.test6(10)
