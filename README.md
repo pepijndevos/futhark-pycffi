@@ -1,4 +1,5 @@
-# futhark-pycffi
+# futhark-ffi
+[![Build Status](https://travis-ci.org/pepijndevos/futhark-pycffi.svg?branch=master)](https://travis-ci.org/pepijndevos/futhark-pycffi)
 Python library using the Futhark C backend via CFFI
 
 Futhark provides several compilers, `futhark-opencl` which is a C backend, and `futhark-pyopencl` which is a Python backend based on PyOpenCL. However, the host-side code of the Python backend is quite slow, leading to a lot of overhead when small, frequent kernels are used.
