@@ -5,7 +5,7 @@ Futhark provides several compilers, `futhark-opencl` which is a C backend, and `
 
 A solution to reduce this overhead is to use CFFI to used the C backend from Python, greatly reducing the calling overhead. The OpenCL code is the same, so this is not interesting for long-running kernels.
 
-This library supports both `futhark-opencl` and `futhark-c`. Futhark arrays are mapped to and from Numpy arrays. Multiple outputs and multi-dimensional arrays are supported. Input arrays should be in contiguous C order.
+This library supports both `futhark-opencl` and `futhark-c`. Futhark arrays are mapped to and from Numpy arrays. Multiple outputs and multi-dimensional arrays are supported.
 
 ## Installation
 
