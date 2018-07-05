@@ -18,3 +18,6 @@ entry test6 (a:i8) : [](i8, i8) =
 
 entry test7 (a: [](i8, i8)) : ([]i8, []i8) =
   unzip a
+
+entry test8 (x: bool): bool =
+  !x

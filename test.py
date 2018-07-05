@@ -43,7 +43,11 @@ class TestFFI(unittest.TestCase):
         (pos, neg) = self.fut.from_futhark(pos, neg)
         assert_array_equal(pos, np.arange(10))
         assert_array_equal(neg, -np.arange(10))
-        
+
+    def test_bool(self):
+        res = self.fut.test8(True)
+        self.assertEqual(res, False)
+
 class TestCompat(unittest.TestCase):
     def setUp(self):
         self.fut = FutharkCompat(_test)
@@ -77,6 +81,10 @@ class TestCompat(unittest.TestCase):
         (pos, neg) = self.fut.test7(res)
         assert_array_equal(pos.get(), np.arange(10))
         assert_array_equal(neg.get(), -np.arange(10))
+
+    def test_bool(self):
+        res = self.fut.test8(True)
+        self.assertEqual(res, False)
 
 if __name__ == '__main__':
     unittest.main()
