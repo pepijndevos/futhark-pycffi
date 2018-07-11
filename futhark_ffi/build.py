@@ -13,6 +13,7 @@ def build(name):
 
     with open(name+'.h') as header:
         cdef = strip_includes(header)
+        cdef += "\nvoid free(void *ptr);"
         ffibuilder.cdef(cdef)
 
     return ffibuilder

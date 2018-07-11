@@ -21,3 +21,6 @@ entry test7 (a: [](i8, i8)) : ([]i8, []i8) =
 
 entry test8 (x: bool): bool =
   !x
+
+entry test9 (a: [5]i32): i32 =
+  reduce (+) 0 a

@@ -119,7 +119,12 @@ class Futhark(object):
         def wrapper(*args):
             out_args = [self.ffi.new(t) for t in out_types]
             in_args = [f(a) for f, a in zip(converters, args)]
-            ff(self.ctx, *(out_args+in_args))
+            err = ff(self.ctx, *(out_args+in_args))
+            if err != 0:
+                errptr = self.lib.futhark_context_get_error(self.ctx)
+                errstr = self.ffi.string(errptr).decode()
+                self.lib.free(errptr)
+                raise ValueError(errstr)
             results = []
             for out_t, out in zip(out_types, out_args):
                 if out_t.item in self.types:

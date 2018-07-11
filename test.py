@@ -48,6 +48,10 @@ class TestFFI(unittest.TestCase):
         res = self.fut.test8(True)
         self.assertEqual(res, False)
 
+    def test_error(self):
+        with self.assertRaises(ValueError):
+            self.fut.test9(np.arange(4))
+
 class TestCompat(unittest.TestCase):
     def setUp(self):
         self.fut = FutharkCompat(_test)
@@ -85,6 +89,10 @@ class TestCompat(unittest.TestCase):
     def test_bool(self):
         res = self.fut.test8(True)
         self.assertEqual(res, False)
+
+    def test_error(self):
+        with self.assertRaises(ValueError):
+            self.fut.test9(np.arange(4))
 
 if __name__ == '__main__':
     unittest.main()
