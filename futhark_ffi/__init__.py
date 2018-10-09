@@ -40,7 +40,8 @@ class Futhark(object):
         for fn in dir(self.lib):
             ff = getattr(self.lib, fn)
             ff_t = self.ffi.typeof(ff)
-            if fn.startswith('futhark_new'):
+            if fn.startswith('futhark_new') and \
+               not fn.startswith('futhark_new_raw'):
                 ret_t = ff_t.result
                 arg_t = ff_t.args[1]
                 rank = len(ff_t.args[2:])
@@ -50,7 +51,8 @@ class Futhark(object):
             elif fn.startswith('futhark_free'):
                 arg_t = ff_t.args[1]
                 self.types.setdefault(arg_t, Type()).free = ff
-            elif fn.startswith('futhark_values'):
+            elif fn.startswith('futhark_values') and \
+                 not fn.startswith('futhark_values_raw'):
                 arg_t = ff_t.args[1]
                 self.types.setdefault(arg_t, Type()).values = ff
             elif fn.startswith('futhark_shape'):

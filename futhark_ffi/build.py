@@ -12,7 +12,9 @@ def build(name):
                               extra_compile_args=["-std=c99"])
 
     with open(name+'.h') as header:
-        cdef = strip_includes(header)
+        cdef = 'typedef void* cl_command_queue;'
+        cdef += '\ntypedef void* cl_mem;'
+        cdef += strip_includes(header)
         cdef += "\nvoid free(void *ptr);"
         ffibuilder.cdef(cdef)
 
