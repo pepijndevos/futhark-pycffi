@@ -20,7 +20,7 @@ before_install:
  - (cd futhark-nightly-linux-x86_64/ && PREFIX=$HOME/.local make install)
 
 install:
-  - futhark-c --library test.fut
+  - futhark c --library test.fut
   - python setup.py install
   - build_futhark_ffi test
 
