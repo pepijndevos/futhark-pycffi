@@ -8,8 +8,15 @@ def build(name):
     ffibuilder = FFI()
 
     with open(name+'.c') as source:
-        ffibuilder.set_source('_'+name, source.read(), libraries=['OpenCL'],
-                              extra_compile_args=["-std=c99"])
+        if sys.platform == 'darwin':
+            libraries=['m']
+            extra_compile_args = ['-std=c99', '-framework', 'OpenCL']
+        else:
+            libraries=['OpenCL']
+            extra_compile_args = ['-std=c99']
+        ffibuilder.set_source('_'+name, source.read(),
+                              libraries=libraries,
+                              extra_compile_args=extra_compile_args)
 
     with open(name+'.h') as header:
         cdef = 'typedef void* cl_command_queue;'
