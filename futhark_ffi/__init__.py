@@ -26,10 +26,20 @@ class Futhark(object):
     Entrypoints return arrays as raw C types.
     Use `from_futhark` to convert to Numpy arrays.
     """
-    def __init__(self, mod):
+    def __init__(self, mod, interactive=False, device=None, platform=None):
         self.lib = mod.lib
         self.ffi = mod.ffi
         self.conf = mod.ffi.gc(mod.lib.futhark_context_config_new(), mod.lib.futhark_context_config_free)
+
+        if device:
+            mod.lib.futhark_context_config_set_device(self.conf, device)
+
+        if platform:
+            mod.lib.futhark_context_config_set_platform(self.conf, platform)
+
+        if interactive:
+            mod.lib.futhark_context_config_select_device_interactively(self.conf)
+
         self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), mod.lib.futhark_context_free)
 
         self.make_types()
