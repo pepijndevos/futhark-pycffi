@@ -14,7 +14,8 @@ entry test5 (a:[][]u64) : [][]u64 =
   map (map (*2)) a
 
 entry test6 (a:i8) : [](i8, i8) =
-  map (\x -> (x, -x)) <| i8.iota a
+  let iot = i8.iota a
+  in map (\x -> (x, -x)) <| iot
 
 entry test7 (a: [](i8, i8)) : ([]i8, []i8) =
   unzip a
