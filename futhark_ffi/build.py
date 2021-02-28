@@ -1,8 +1,9 @@
+import re
 import sys
 from cffi import FFI
 
-def strip_includes(lines):
-    return '\n'.join(line for line in lines if not line.startswith('#'))
+def strip_includes(header):
+    return re.sub('^(#ifdef __cplusplus\n.*\n#endif|#.*)\n', '', header, flags=re.M)
 
 def build(name):
     ffibuilder = FFI()
@@ -21,7 +22,7 @@ def build(name):
     with open(name+'.h') as header:
         cdef = 'typedef void* cl_command_queue;'
         cdef += '\ntypedef void* cl_mem;'
-        cdef += strip_includes(header)
+        cdef += strip_includes(header.read())
         cdef += "\nvoid free(void *ptr);"
         ffibuilder.cdef(cdef)
 
