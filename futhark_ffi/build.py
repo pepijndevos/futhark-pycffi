@@ -1,6 +1,8 @@
 import re
 import sys
+
 from cffi import FFI
+
 
 def strip_includes(header):
     return re.sub('^(#ifdef __cplusplus\n.*\n#endif|#.*)\n', '', header, flags=re.M)

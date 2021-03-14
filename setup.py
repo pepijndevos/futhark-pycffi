@@ -1,6 +1,7 @@
-from setuptools import setup
-from os import path
 import io
+from os import path
+
+from setuptools import setup
 
 here = path.abspath(path.dirname(__file__))
 
