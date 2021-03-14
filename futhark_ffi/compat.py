@@ -13,7 +13,7 @@ class FutharkCompat(Futhark):
     """
     A subclass that wraps all arrays in
     a class with a `get` method.
-    For compatability with PyOpenCL
+    For compatibility with PyOpenCL
     """
 
     def make_wrapper(self, ff):
