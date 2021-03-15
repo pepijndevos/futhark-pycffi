@@ -11,7 +11,7 @@ addons:
     packages:
     - wget
     - libgmp-dev
-    - libffi6
+    - libffi7
     - libc6:i386
     - ocl-icd-libopencl1
 
