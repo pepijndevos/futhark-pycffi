@@ -1,10 +1,13 @@
 import unittest
+
+import _test
 import numpy as np
 from numpy.random import random
 from numpy.testing import assert_array_equal
-import _test
+
 from futhark_ffi import Futhark
 from futhark_ffi.compat import FutharkCompat
+
 
 class TestFFI(unittest.TestCase):
     def setUp(self):

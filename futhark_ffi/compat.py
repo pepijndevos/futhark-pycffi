@@ -1,5 +1,7 @@
-from futhark_ffi import Futhark
 from functools import partial, wraps
+
+from futhark_ffi import Futhark
+
 
 class Gettable(object):
     def __init__(self, fh, futdata):

@@ -1,4 +1,5 @@
 from functools import partial, wraps
+
 import numpy as np
 
 np_types = {
