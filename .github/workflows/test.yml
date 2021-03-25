@@ -40,6 +40,7 @@ jobs:
     - name: Run tests
       run: |
         futhark c --library test.fut
-        python setup.py install
+        futhark c --library test_badconsts.fut
         build_futhark_ffi test
+        build_futhark_ffi test_badconsts
         python test.py

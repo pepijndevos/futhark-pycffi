@@ -43,6 +43,12 @@ class Futhark(object):
 
         self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), mod.lib.futhark_context_free)
 
+        errptr = self.lib.futhark_context_get_error(self.ctx)
+        if errptr:
+            errstr = self.ffi.string(errptr).decode()
+            self.lib.free(errptr)
+            raise ValueError(errstr)
+
         self.make_types()
         self.make_entrypoints()
         

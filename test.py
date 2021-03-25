@@ -1,6 +1,7 @@
 import unittest
 
 import _test
+import _test_badconsts
 import numpy as np
 from numpy.random import random
 from numpy.testing import assert_array_equal
@@ -96,6 +97,9 @@ class TestCompat(unittest.TestCase):
     def test_error(self):
         with self.assertRaises(ValueError):
             self.fut.test9(np.arange(4))
+
+    def test_bad_consts(self):
+        self.assertRaises(Exception, Futhark, _test_badconsts)
 
 if __name__ == '__main__':
     unittest.main()
