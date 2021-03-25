@@ -18,7 +18,6 @@ def build(name):
         sys.exit('Cannot determine Futhark backend from {}'.format(header_file))
 
     backend=search.group(1)
-    print(backend)
 
     with open(source_file) as source:
         libraries = ['m']
