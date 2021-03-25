@@ -20,7 +20,7 @@ class FutharkCompat(Futhark):
 
     def make_wrapper(self, ff):
         wrapper = Futhark.make_wrapper(self,ff)
-        
+
         @wraps(wrapper)
         def subwrapper(*args):
             uwargs = []

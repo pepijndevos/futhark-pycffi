@@ -51,7 +51,7 @@ class Futhark(object):
 
         self.make_types()
         self.make_entrypoints()
-        
+
     def make_types(self):
         self.types = {}
         for fn in dir(self.lib):
