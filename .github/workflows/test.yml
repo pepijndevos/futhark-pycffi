@@ -1,0 +1,45 @@
+name: Test
+
+on:
+  pull_request:
+    branches: [ master ]
+
+  push:
+
+jobs:
+  test-c:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+
+    - name: Install Futhark
+      run: |
+          wget http://futhark-lang.org/releases/futhark-nightly-linux-x86_64.tar.xz
+          tar xf futhark-nightly-linux-x86_64.tar.xz
+          (cd futhark-nightly-linux-x86_64/ && PREFIX=$HOME/.local make install)
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install build_futhark_ffi
+      run: |
+        python setup.py install
+
+    - name: Run tests
+      run: |
+        futhark c --library test.fut
+        python setup.py install
+        build_futhark_ffi test
+        python test.py
