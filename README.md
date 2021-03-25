@@ -1,5 +1,5 @@
 # futhark-ffi
-[![Build Status](https://travis-ci.org/pepijndevos/futhark-pycffi.svg?branch=master)](https://travis-ci.org/pepijndevos/futhark-pycffi)
+[![Test](https://github.com/pepijndevos/futhark-pycffi/actions/workflows/test.yml/badge.svg)](https://github.com/pepijndevos/futhark-pycffi/actions/workflows/test.yml)
 
 Python library using the Futhark C backend via CFFI
 
