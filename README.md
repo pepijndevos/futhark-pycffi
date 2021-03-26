@@ -1,5 +1,5 @@
 # futhark-ffi
-[![Test](https://github.com/pepijndevos/futhark-pycffi/actions/workflows/test.yml/badge.svg)](https://github.com/pepijndevos/futhark-pycffi/actions/workflows/test.yml)
+[![Test](https://github.com/pepijndevos/futhark-pycffi/actions/workflows/ci.yml/badge.svg)](https://github.com/pepijndevos/futhark-pycffi/actions/workflows/ci.yml)
 
 Python library using the Futhark C backend via CFFI
 
