@@ -27,7 +27,7 @@ class Futhark(object):
     Entrypoints return arrays as raw C types.
     Use `from_futhark` to convert to Numpy arrays.
     """
-    def __init__(self, mod, interactive=False, device=None, platform=None):
+    def __init__(self, mod, interactive=False, device=None, platform=None, profiling=False):
         self.lib = mod.lib
         self.ffi = mod.ffi
         self.conf = mod.ffi.gc(mod.lib.futhark_context_config_new(), mod.lib.futhark_context_config_free)
@@ -41,13 +41,14 @@ class Futhark(object):
         if interactive:
             mod.lib.futhark_context_config_select_device_interactively(self.conf)
 
+        if profiling:
+            mod.lib.futhark_context_config_set_profiling(self.conf, 1)
+
         self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), mod.lib.futhark_context_free)
 
         errptr = self.lib.futhark_context_get_error(self.ctx)
         if errptr:
-            errstr = self.ffi.string(errptr).decode()
-            self.lib.free(errptr)
-            raise ValueError(errstr)
+            raise ValueError(self._get_string(errptr))
 
         self.make_types()
         self.make_entrypoints()
@@ -140,10 +141,7 @@ class Futhark(object):
             in_args = [f(a) for f, a in zip(converters, args)]
             err = ff(self.ctx, *(out_args+in_args))
             if err != 0:
-                errptr = self.lib.futhark_context_get_error(self.ctx)
-                errstr = self.ffi.string(errptr).decode()
-                self.lib.free(errptr)
-                raise ValueError(errstr)
+                raise ValueError(self._get_string(self.lib.futhark_context_get_error(self.ctx)))
             results = []
             for out_t, out in zip(out_types, out_args):
                 if out_t.item in self.types:
@@ -157,3 +155,17 @@ class Futhark(object):
                 return tuple(results)
 
         return wrapper
+
+    def pause_profiling(self):
+        self.lib.futhark_context_pause_profiling(self.ctx)
+
+    def unpause_profiling(self):
+        self.lib.futhark_context_unpause_profiling(self.ctx)
+
+    def report(self):
+        return self._get_string(self.lib.futhark_context_report(self.ctx))
+
+    def _get_string(self, ptr):
+        string = self.ffi.string(ptr).decode()
+        self.lib.free(ptr)
+        return string
