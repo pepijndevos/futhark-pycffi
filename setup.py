@@ -11,7 +11,7 @@ with io.open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='futhark_ffi',
-    version='0.11.0',
+    version='0.12.0',
     description='A Python library using the Futhark C backend via CFFI ',
     long_description=long_description,
     long_description_content_type='text/markdown',
