@@ -27,7 +27,7 @@ class Futhark(object):
     Entrypoints return arrays as raw C types.
     Use `from_futhark` to convert to Numpy arrays.
     """
-    def __init__(self, mod, interactive=False, device=None, platform=None):
+    def __init__(self, mod, interactive=False, device=None, platform=None, profiling=False):
         self.lib = mod.lib
         self.ffi = mod.ffi
         self.conf = mod.ffi.gc(mod.lib.futhark_context_config_new(), mod.lib.futhark_context_config_free)
@@ -40,6 +40,9 @@ class Futhark(object):
 
         if interactive:
             mod.lib.futhark_context_config_select_device_interactively(self.conf)
+
+        if profiling:
+            mod.lib.futhark_context_config_set_profiling(self.conf, 1)
 
         self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), mod.lib.futhark_context_free)
 
@@ -157,3 +160,12 @@ class Futhark(object):
                 return tuple(results)
 
         return wrapper
+
+    def pause_profiling(self):
+        self.lib.futhark_context_pause_profiling(self.ctx)
+
+    def unpause_profiling(self):
+        self.lib.futhark_context_unpause_profiling(self.ctx)
+
+    def report(self):
+        return self.ffi.string(self.lib.futhark_context_report(self.ctx)).decode()
