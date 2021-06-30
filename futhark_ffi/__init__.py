@@ -27,7 +27,7 @@ class Futhark(object):
     Entrypoints return arrays as raw C types.
     Use `from_futhark` to convert to Numpy arrays.
     """
-    def __init__(self, mod, interactive=False, device=None, platform=None, profiling=False):
+    def __init__(self, mod, interactive=False, device=None, platform=None, profiling=False, tuning=None):
         self.lib = mod.lib
         self.ffi = mod.ffi
         self.conf = mod.ffi.gc(mod.lib.futhark_context_config_new(), mod.lib.futhark_context_config_free)
@@ -43,6 +43,10 @@ class Futhark(object):
 
         if profiling:
             mod.lib.futhark_context_config_set_profiling(self.conf, 1)
+
+        if tuning:
+            for (k, v) in tuning.items():
+                mod.lib.futhark_context_config_set_size(self.conf, k.encode("ascii"), v);
 
         self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), mod.lib.futhark_context_free)
 
