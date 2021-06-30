@@ -45,7 +45,7 @@ class Futhark(object):
             mod.lib.futhark_context_config_set_profiling(self.conf, 1)
 
         if tuning:
-            for (k, v) in zip(tuning.keys(), tuning.values()):
+            for (k, v) in tuning.items():
                 mod.lib.futhark_context_config_set_size(self.conf, k.encode("ascii"), v);
 
         self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), mod.lib.futhark_context_free)
