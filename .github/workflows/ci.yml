@@ -26,6 +26,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
 
+    - name: Install Debian dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y opencl-headers nvidia-cuda-dev nvidia-opencl-dev oclgrind
+
     - name: Install Futhark
       run: |
           wget http://futhark-lang.org/releases/futhark-nightly-linux-x86_64.tar.xz
@@ -37,13 +42,29 @@ jobs:
       run: |
         python setup.py install
 
-    - name: Run tests
+    - name: Run tests (C backend)
       run: |
         futhark c --library test.fut
         futhark c --library test_badconsts.fut
         build_futhark_ffi test
         build_futhark_ffi test_badconsts
         python test.py
+
+    - name: Run tests (OpenCL backend)
+      run: |
+        futhark opencl --library test.fut
+        futhark opencl --library test_badconsts.fut
+        build_futhark_ffi test
+        build_futhark_ffi test_badconsts
+        oclgrind python test.py
+
+    - name: Run tests (CUDA backend)
+      run: |
+        futhark cuda --library test.fut
+        futhark cuda --library test_badconsts.fut
+        build_futhark_ffi test
+        build_futhark_ffi test_badconsts
+        # Can't actually run them without a CUDA device...
 
   pip:
     runs-on: ubuntu-latest
