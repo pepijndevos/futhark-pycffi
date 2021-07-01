@@ -56,6 +56,10 @@ class TestFFI(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.fut.test9(np.arange(4))
 
+    def test_issue25(self):
+        with self.assertRaises(ValueError):
+            self.fut.from_futhark(self.fut.issue25(np.arange(10,dtype=np.int32)))
+
 class TestCompat(unittest.TestCase):
     def setUp(self):
         self.fut = FutharkCompat(_test)

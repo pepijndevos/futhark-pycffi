@@ -25,3 +25,6 @@ entry test8 (x: bool): bool =
 
 entry test9 (a: [5]i32): i32 =
   reduce (+) 0 a
+
+entry issue25 [m] (xxx: [m]i32): [m]i32 =
+  map (\i -> xxx[100 + i]) xxx

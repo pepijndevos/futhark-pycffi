@@ -98,6 +98,10 @@ class Futhark(object):
             destr = fut_type.free
             return self.ffi.gc(constr(self.ctx, ptr, *data.shape), partial(destr, self.ctx))
 
+    def _errorcheck(self, err):
+        if err != 0:
+                raise ValueError(self._get_string(self.lib.futhark_context_get_error(self.ctx)))
+
     def _from_futhark(self, data):
         cname = self.ffi.typeof(data)
         fut_type = self.types[cname]
@@ -112,12 +116,13 @@ class Futhark(object):
     def from_futhark(self, *dargs):
         """
         Converts any number of Futhark C types to Numpy arrays.
-        Syncs once at the end.
+        Syncs initially and again at the end.
         """
+        self._errorcheck(self.lib.futhark_context_sync(self.ctx))
         out = []
         for d in dargs:
             out.append(self._from_futhark(d))
-        self.lib.futhark_context_sync(self.ctx)
+        self._errorcheck(self.lib.futhark_context_sync(self.ctx))
         if len(out) == 1:
             return out[0]
         else:
@@ -141,11 +146,12 @@ class Futhark(object):
 
         @wraps(ff)
         def wrapper(*args):
+
             out_args = [self.ffi.new(t) for t in out_types]
             in_args = [f(a) for f, a in zip(converters, args)]
             err = ff(self.ctx, *(out_args+in_args))
-            if err != 0:
-                raise ValueError(self._get_string(self.lib.futhark_context_get_error(self.ctx)))
+            self._errorcheck(err)
+
             results = []
             for out_t, out in zip(out_types, out_args):
                 if out_t.item in self.types:
