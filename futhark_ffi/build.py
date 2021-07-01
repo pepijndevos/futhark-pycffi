@@ -41,6 +41,7 @@ def build(name):
     with open(header_file) as header:
         cdef = 'typedef void* cl_command_queue;'
         cdef += '\ntypedef void* cl_mem;'
+        cdef += '\ntypedef void* CUdeviceptr;'
         cdef += strip_includes(header.read())
         cdef += "\nvoid free(void *ptr);"
         ffibuilder.cdef(cdef)
