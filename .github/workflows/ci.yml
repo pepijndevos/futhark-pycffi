@@ -50,6 +50,14 @@ jobs:
         build_futhark_ffi test_badconsts
         python test.py
 
+    - name: Run tests (multicore backend)
+      run: |
+        futhark multicore --library test.fut
+        futhark multicore --library test_badconsts.fut
+        build_futhark_ffi test
+        build_futhark_ffi test_badconsts
+        python test.py
+
     - name: Run tests (OpenCL backend)
       run: |
         futhark opencl --library test.fut
