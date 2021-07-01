@@ -19,13 +19,17 @@ def build(name):
 
     backend=search.group(1)
 
+    print('Detected platform: ' + sys.platform)
+    print('Detected backend:  ' + backend)
+
     with open(source_file) as source:
         libraries = ['m']
         extra_compile_args = ['-std=c99']
         if backend == 'opencl':
             if sys.platform == 'darwin':
                 extra_compile_args += ['-framework', 'OpenCL']
-            libraries += ['OpenCL']
+            else:
+                libraries += ['OpenCL']
         elif backend == 'cuda':
             libraries += ['cuda', 'cudart', 'nvrtc']
         elif backend == 'multicore':
