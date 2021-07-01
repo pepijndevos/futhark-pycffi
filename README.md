@@ -3,11 +3,21 @@
 
 Python library using the Futhark C backend via CFFI
 
-Futhark provides several compiler backends, `futhark opencl` which is a C backend, and `futhark pyopencl` which is a Python backend based on PyOpenCL. However, the host-side code of the Python backend is quite slow, leading to a lot of overhead when small, frequent kernels are used.
+Futhark provides several compiler backends, for example `futhark
+opencl` which is a C backend, and `futhark pyopencl` which is a Python
+backend based on PyOpenCL. However, the host-side code of the Python
+backend is quite slow, leading to a lot of overhead when small,
+frequent kernels are used.
 
-A solution to reduce this overhead is to use CFFI to used the C backend from Python, greatly reducing the calling overhead. The OpenCL code is the same, so this is not interesting for long-running kernels.
+A solution to reduce this overhead is to use CFFI to used the C
+backend from Python, greatly reducing the calling overhead. The OpenCL
+code is the same, so this is not interesting for long-running kernels.
 
-This library supports both `futhark opencl` and `futhark c`. Futhark arrays are mapped to and from Numpy arrays. Multiple outputs and multi-dimensional arrays are supported.
+This library supports the following Futhark backends: `c`, `opencl`,
+`multicore`, and `cuda`.
+
+Futhark arrays are mapped to and from Numpy arrays. Multiple outputs
+and multi-dimensional arrays are supported.
 
 ## Installation
 
