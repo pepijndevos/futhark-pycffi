@@ -7,17 +7,21 @@ from cffi import FFI
 def strip_includes(header):
     return re.sub('^(#ifdef __cplusplus\n.*\n#endif|#.*)\n', '', header, flags=re.M)
 
-def build(name):
+def build(input_name, output_name):
     ffibuilder = FFI()
 
-    header_file = name+'.h'
-    source_file = name+'.c'
+    header_file = input_name + '.h'
+    source_file = input_name + '.c'
+
+    output_name_lst = output_name.split("/")
+    output_name_lst[-1] = "_" + output_name_lst[-1]
+    output_name = ".".join(output_name_lst)
 
     search = re.search('#define FUTHARK_BACKEND_([a-z0-9_]*)', open(header_file).read())
     if not search:
         sys.exit('Cannot determine Futhark backend from {}'.format(header_file))
 
-    backend=search.group(1)
+    backend = search.group(1)
 
     print('Detected platform: ' + sys.platform)
     print('Detected backend:  ' + backend)
@@ -34,7 +38,8 @@ def build(name):
             libraries += ['cuda', 'cudart', 'nvrtc']
         elif backend == 'multicore':
             extra_compile_args += ['-pthread']
-        ffibuilder.set_source('_'+name, source.read(),
+        ffibuilder.set_source(output_name,
+                              source.read(),
                               libraries=libraries,
                               extra_compile_args=extra_compile_args)
 
@@ -50,5 +55,5 @@ def build(name):
 
 def main():
     name = sys.argv[1]
-    ffi = build(name)
+    ffi = build(name, name)
     ffi.compile()
