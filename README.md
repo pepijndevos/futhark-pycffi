@@ -46,3 +46,7 @@ test = Futhark(_test)
 res = test.test3(np.arange(10))
 test.from_futhark(res)
 ```
+
+## Example usage
+
+* https://github.com/mortvest/hastl
