@@ -1,5 +1,6 @@
 import re
 import sys
+import json
 
 from cffi import FFI
 
@@ -12,16 +13,15 @@ def build(input_name, output_name):
 
     header_file = input_name + '.h'
     source_file = input_name + '.c'
+    manifest_file = input_name + '.json'
+
+    manifest = json.load(open(manifest_file))
 
     output_name_lst = output_name.split("/")
     output_name_lst[-1] = "_" + output_name_lst[-1]
     output_name = ".".join(output_name_lst)
 
-    search = re.search('#define FUTHARK_BACKEND_([a-z0-9_]*)', open(header_file).read())
-    if not search:
-        sys.exit('Cannot determine Futhark backend from {}'.format(header_file))
-
-    backend = search.group(1)
+    backend = manifest['backend']
 
     print('Detected platform: ' + sys.platform)
     print('Detected backend:  ' + backend)
