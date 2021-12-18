@@ -30,7 +30,8 @@ class Futhark(object):
     def __init__(self, mod, interactive=False, device=None, platform=None, profiling=False, tuning=None):
         self.lib = mod.lib
         self.ffi = mod.ffi
-        self.conf = mod.ffi.gc(mod.lib.futhark_context_config_new(), mod.lib.futhark_context_config_free)
+        conf = mod.lib.futhark_context_config_new()
+        self.conf = conf
 
         if device:
             mod.lib.futhark_context_config_set_device(self.conf, device)
@@ -48,7 +49,11 @@ class Futhark(object):
             for (k, v) in tuning.items():
                 mod.lib.futhark_context_config_set_size(self.conf, k.encode("ascii"), v);
 
-        self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), mod.lib.futhark_context_free)
+        def free_ctx(ctx):
+            mod.lib.futhark_context_free(ctx)
+            mod.lib.futhark_context_config_free(conf)
+
+        self.ctx = mod.ffi.gc(mod.lib.futhark_context_new(self.conf), free_ctx)
 
         errptr = self.lib.futhark_context_get_error(self.ctx)
         if errptr:
