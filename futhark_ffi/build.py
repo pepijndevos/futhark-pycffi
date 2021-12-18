@@ -1,6 +1,6 @@
+import json
 import re
 import sys
-import json
 
 from cffi import FFI
 
