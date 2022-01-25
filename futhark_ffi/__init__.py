@@ -47,7 +47,7 @@ class Futhark(object):
 
         if tuning:
             for (k, v) in tuning.items():
-                mod.lib.futhark_context_config_set_size(self.conf, k.encode("ascii"), v);
+                mod.lib.futhark_context_config_set_tuning_param(self.conf, k.encode("ascii"), v)
 
         def free_ctx(ctx):
             mod.lib.futhark_context_free(ctx)
