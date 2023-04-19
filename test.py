@@ -48,6 +48,13 @@ class TestFFI(unittest.TestCase):
         assert_array_equal(pos, np.arange(10))
         assert_array_equal(neg, -np.arange(10))
 
+    def test_store(self):
+        stored = self.fut.test10a(42)
+        intermediate = self.fut.store_testOpaque(stored)
+        restored = self.fut.restore_testOpaque(intermediate)
+        self.assertEqual(self.fut.test10b(stored), self.fut.test10b(restored))
+
+
     def test_bool(self):
         res = self.fut.test8(True)
         self.assertEqual(res, False)
