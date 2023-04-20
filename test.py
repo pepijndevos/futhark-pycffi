@@ -53,7 +53,8 @@ class TestFFI(unittest.TestCase):
         intermediate = self.fut.store_testOpaque(stored)
         restored = self.fut.restore_testOpaque(intermediate)
         self.assertEqual(self.fut.test10b(stored), self.fut.test10b(restored))
-
+        with self.assertRaises(ValueError):
+            self.fut.restore_testOpaque(np.arange(0))
 
     def test_bool(self):
         res = self.fut.test8(True)
