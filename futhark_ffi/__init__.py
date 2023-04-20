@@ -61,6 +61,8 @@ class Futhark(object):
 
         self.make_types()
         self.make_entrypoints()
+        self.make_stores()
+        self.make_restores()
 
     def make_types(self):
         self.types = {}
@@ -91,6 +93,18 @@ class Futhark(object):
             if fn.startswith('futhark_entry'):
                 ff = getattr(self.lib, fn)
                 setattr(self, fn[14:], self.make_wrapper(ff))
+
+    def make_stores(self):
+        for fn in dir(self.lib):
+            if fn.startswith('futhark_store'):
+                ff = getattr(self.lib, fn)
+                setattr(self, 'store' + fn[20:], self.make_store_wrapper(ff))
+    
+    def make_restores(self):
+        for fn in dir(self.lib):
+            if fn.startswith('futhark_restore'):
+                ff = getattr(self.lib, fn)
+                setattr(self, 'restore' + fn[22:], self.make_restore_wrapper(ff))
 
     def to_futhark(self, fut_type, data):
         "Convert a Numpy array to a Futhark C type"
@@ -168,6 +182,34 @@ class Futhark(object):
                 return results[0]
             else:
                 return tuple(results)
+
+        return wrapper
+
+    def make_store_wrapper(self, ff):
+        
+        @wraps(ff)
+        def wrapper(opaque):
+            bytes_ptr_ptr = self.ffi.new('void **', self.ffi.NULL)
+            size_ptr = self.ffi.new('size_t *')
+            err = ff(self.ctx, opaque, bytes_ptr_ptr, size_ptr)
+            self._errorcheck(err)
+            bytes_ptr = self.ffi.gc(bytes_ptr_ptr[0], self.lib.free)
+            return self.ffi.buffer(bytes_ptr, size_ptr[0])
+
+        return wrapper
+    
+    def make_restore_wrapper(self, ff):
+        fut_type = self.ffi.typeof(ff).result
+        
+        @wraps(ff)
+        def wrapper(buffer):
+            bytes_ptr = self.ffi.from_buffer(buffer)
+            res = ff(self.ctx, bytes_ptr)
+            #handle NULL pointer
+            if res:
+                return self.ffi.gc(res, partial(self.types[fut_type].free, self.ctx))
+            else:
+                raise ValueError("failed to restore value from buffer")
 
         return wrapper
 

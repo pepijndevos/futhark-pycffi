@@ -26,5 +26,9 @@ entry test8 (x: bool): bool =
 entry test9 (a: [5]i32): i32 =
   reduce (+) 0 a
 
+type testOpaque = {testfield:i32}
+entry test10a (a: i32) : testOpaque = {testfield = a}
+entry test10b (a:testOpaque) : i32 = a.testfield
+
 entry issue25 [m] (xxx: [m]i32): [m]i32 =
   map (\i -> xxx[100 + i]) xxx
