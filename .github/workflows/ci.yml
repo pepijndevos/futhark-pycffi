@@ -40,7 +40,7 @@ jobs:
 
     - name: Install build_futhark_ffi
       run: |
-        python setup.py install
+        pip install .
 
     - name: Run tests (C backend)
       run: |
