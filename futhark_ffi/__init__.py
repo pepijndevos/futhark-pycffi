@@ -27,7 +27,7 @@ class Futhark(object):
     Entrypoints return arrays as raw C types.
     Use `from_futhark` to convert to Numpy arrays.
     """
-    def __init__(self, mod, interactive=False, device=None, platform=None, profiling=False, tuning=None):
+    def __init__(self, mod, interactive=False, device=None, platform=None, profiling=False, tuning=None, cache_file_path=None):
         self.lib = mod.lib
         self.ffi = mod.ffi
         conf = mod.lib.futhark_context_config_new()
@@ -48,6 +48,9 @@ class Futhark(object):
         if tuning:
             for (k, v) in tuning.items():
                 mod.lib.futhark_context_config_set_tuning_param(self.conf, k.encode("ascii"), v)
+
+        if cache_file_path:
+            mod.lib.futhark_context_config_set_cache_file(self.conf, cache_file_path.encode("ascii"))
 
         def free_ctx(ctx):
             mod.lib.futhark_context_free(ctx)
@@ -99,7 +102,7 @@ class Futhark(object):
             if fn.startswith('futhark_store'):
                 ff = getattr(self.lib, fn)
                 setattr(self, 'store' + fn[20:], self.make_store_wrapper(ff))
-    
+
     def make_restores(self):
         for fn in dir(self.lib):
             if fn.startswith('futhark_restore'):
@@ -186,7 +189,7 @@ class Futhark(object):
         return wrapper
 
     def make_store_wrapper(self, ff):
-        
+
         @wraps(ff)
         def wrapper(opaque):
             bytes_ptr_ptr = self.ffi.new('void **', self.ffi.NULL)
@@ -197,10 +200,10 @@ class Futhark(object):
             return self.ffi.buffer(bytes_ptr, size_ptr[0])
 
         return wrapper
-    
+
     def make_restore_wrapper(self, ff):
         fut_type = self.ffi.typeof(ff).result
-        
+
         @wraps(ff)
         def wrapper(buffer):
             bytes_ptr = self.ffi.from_buffer(buffer)
