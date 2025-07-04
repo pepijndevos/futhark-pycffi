@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.8, 3.9]
+        python-version: ['3.10', '3.11', '3.12', '3.13']
 
     steps:
     - uses: actions/checkout@v2
@@ -24,7 +24,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools
 
     - name: Install Debian dependencies
       run: |
@@ -40,7 +40,7 @@ jobs:
 
     - name: Install build_futhark_ffi
       run: |
-        python setup.py install
+        pip install .
 
     - name: Run tests (C backend)
       run: |
